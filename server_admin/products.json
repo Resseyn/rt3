@@ -1,0 +1,7 @@
+[
+    {"id": 1, "name": "Ноутбук", "price": 50000, "description": "Мощный ноутбук", "categories": ["Электроника"]},
+    {"id": 2, "name": "Смартфон", "price": 30000, "description": "Флагманский смартфон", "categories": ["Электроника"]},
+    {"id": 3, "name": "Книга", "price": 1000, "description": "Бестселлер", "categories": ["Книги"]},
+    {"id": 4, "name": "Наушники", "price": 5000, "description": "Беспроводные наушники", "categories": ["Электроника", "Аксессуары"]},
+    {"id": 5, "name": "Чехол", "price": 1500, "description": "Чехол для смартфона", "categories": ["Аксессуары"]}
+]
