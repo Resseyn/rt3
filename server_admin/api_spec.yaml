@@ -1,0 +1,136 @@
+swagger: "2.0"
+info:
+  title: Admin API
+  version: "1.0.0"
+host: localhost:8080
+basePath: /
+schemes:
+  - http
+consumes:
+  - application/json
+produces:
+  - application/json
+
+paths:
+  /api/products:
+    post:
+      summary: Добавить товары
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: products
+          required: true
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Product'
+      responses:
+        201:
+          description: Успешно добавлено
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+              products:
+                type: array
+                items:
+                  $ref: '#/definitions/Product'
+
+  /api/products/{product_id}:
+    put:
+      summary: Обновить товар
+      consumes:
+        - application/json
+      parameters:
+        - name: product_id
+          in: path
+          required: true
+          type: integer
+        - in: body
+          name: product
+          required: true
+          schema:
+            $ref: '#/definitions/Product'
+      responses:
+        200:
+          description: Успешно обновлено
+          schema:
+            $ref: '#/definitions/Product'
+        404:
+          description: Товар не найден
+
+    delete:
+      summary: Удалить товар
+      parameters:
+        - name: product_id
+          in: path
+          required: true
+          type: integer
+      responses:
+        200:
+          description: Успешно удалено
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+        404:
+          description: Товар не найден
+
+  /graphql:
+    post:
+      summary: Выполнение GraphQL запросов и мутаций
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: query
+          required: true
+          schema:
+            type: object
+            properties:
+              query:
+                type: string
+                example: |
+                  query {
+                    products {
+                      id
+                      name
+                      price
+                      description
+                      categories
+                    }
+                  }
+      responses:
+        200:
+          description: Успешный ответ
+          schema:
+            type: object
+            properties:
+              data:
+                type: object
+                properties:
+                  products:
+                    type: array
+                    items:
+                      $ref: '#/definitions/Product'
+
+definitions:
+  Product:
+    type: object
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+      price:
+        type: number
+        format: float
+      description:
+        type: string
+      categories:
+        type: array
+        items:
+          type: string

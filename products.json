@@ -1,0 +1,11 @@
+[
+    {
+        "name": "123",
+        "price": 123,
+        "description": "123",
+        "categories": [
+            "123"
+        ],
+        "id": 1
+    }
+]

@@ -1,66 +1,71 @@
 document.addEventListener("DOMContentLoaded", () => {
     const productList = document.getElementById("product-list");
-    const categoryFilter = document.getElementById("category");
+    const chatWindow = document.getElementById("chat-window");
+    const messageForm = document.getElementById("messageForm");
 
-    // Загружаем товары с сервера
-    async function fetchProducts() {
-        try {
-            const response = await fetch("/api/products");
-            const products = await response.json();
-            displayProducts(products);
-            populateCategoryFilter(products);
-        } catch (error) {
-            console.error("Ошибка загрузки товаров:", error);
+    // WebSocket для чата
+    const socket = new WebSocket("ws://localhost:4000");
+    socket.onmessage = (event) => {
+        const message = JSON.parse(event.data);
+        const messageElement = document.createElement("div");
+        messageElement.textContent = `${message.sender}: ${message.text}`;
+        messageElement.className = message.sender === "User" ? "message sent" : "message received";
+        chatWindow.appendChild(messageElement);
+        chatWindow.scrollTop = chatWindow.scrollHeight; 
+    };
+
+    messageForm.addEventListener("submit", (e) => {
+        e.preventDefault(); 
+        const messageInput = document.getElementById("message").value;
+        if (messageInput.trim() !== "") {
+            const message = { sender: "User", text: messageInput };
+            socket.send(JSON.stringify(message));
+
+            const messageElement = document.createElement("div");
+            messageElement.textContent = `User: ${message.text}`;
+            messageElement.className = "message sent";
+            chatWindow.appendChild(messageElement);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+
+            document.getElementById("message").value = "";
         }
+    });
+
+    async function fetchProducts() {
+        const response = await fetch("http://localhost:3000/graphql", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                query: `
+                    {
+                        products {
+                            id
+                            name
+                            price
+                            description
+                            categories
+                        }
+                    }
+                `
+            })
+        });
+        const result = await response.json();
+        displayProducts(result.data.products);
     }
 
-    // Отображение списка товаров
     function displayProducts(products) {
         productList.innerHTML = "";
         products.forEach(product => {
             const productCard = document.createElement("div");
-            productCard.className = "product-card";
             productCard.innerHTML = `
                 <h3>${product.name}</h3>
-                <p class="price">${product.price} ₽</p>
+                <p>${product.price} ₽</p>
                 <p>${product.description}</p>
-                <p class="categories">Категории: ${product.categories.join(", ")}</p>
+                <p>Категории: ${product.categories.join(", ")}</p>
             `;
             productList.appendChild(productCard);
         });
     }
 
-    // Заполнение фильтра по категориям
-    function populateCategoryFilter(products) {
-        const categories = new Set();
-        products.forEach(product => {
-            product.categories.forEach(category => categories.add(category));
-        });
-
-        categories.forEach(category => {
-            const option = document.createElement("option");
-            option.value = category;
-            option.textContent = category;
-            categoryFilter.appendChild(option);
-        });
-    }
-
-    // Фильтрация товаров
-    categoryFilter.addEventListener("change", async () => {
-        const response = await fetch("/api/products");
-        const products = await response.json();
-        const selectedCategory = categoryFilter.value;
-
-        if (selectedCategory === "all") {
-            displayProducts(products);
-        } else {
-            const filteredProducts = products.filter(product =>
-                product.categories.includes(selectedCategory)
-            );
-            displayProducts(filteredProducts);
-        }
-    });
-
-    // Загрузка товаров при запуске
     fetchProducts();
 });
